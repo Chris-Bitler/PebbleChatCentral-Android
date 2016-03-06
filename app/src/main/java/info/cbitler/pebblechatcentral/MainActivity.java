@@ -1,7 +1,9 @@
 package info.cbitler.pebblechatcentral;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -33,18 +35,38 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-        if(prefs.getString("network",null) != null && prefs.getString("channels",null) != null && prefs.getString("nick",null) != null) {
-            intent = new Intent(Intent.ACTION_ALL_APPS,null,this, IRCIntent.class);
-            intent.putExtra("network", prefs.getString("network",null));
-            intent.putExtra("channels", prefs.getString("channels",null).split(","));
-            intent.putExtra("nick", prefs.getString("nick", null));
 
-            ((EditText)findViewById(R.id.editText)).setText(prefs.getString("network", null));
-            ((EditText)findViewById(R.id.editText2)).setText(prefs.getString("channels", null));
-            ((EditText)findViewById(R.id.editText4)).setText(prefs.getString("nick",null));
-            startService(intent);
-            ((TextView)findViewById(R.id.textView5)).setText("Connected!");
+        BroadcastReceiver rc = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ((TextView)findViewById(R.id.textView5)).setText("Cannot connect - " + intent.getStringExtra("reason"));
+            }
+        };
+
+        BroadcastReceiver rc2 = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                ((TextView)findViewById(R.id.textView5)).setText("Connected!");
+            }
+        };
+
+        registerReceiver(rc, new IntentFilter("CONNECT_F"));
+        registerReceiver(rc2, new IntentFilter("CONNECT"));
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        if(intent == null) {
+            if (prefs.getString("network", null) != null && prefs.getString("channels", null) != null && prefs.getString("nick", null) != null) {
+                intent = new Intent(Intent.ACTION_ALL_APPS, null, this, IRCIntent.class);
+                intent.putExtra("network", prefs.getString("network", null));
+                intent.putExtra("channels", prefs.getString("channels", null).split(","));
+                intent.putExtra("nick", prefs.getString("nick", null));
+                intent.putExtra("pass", prefs.getString("pass", null));
+                ((EditText) findViewById(R.id.editText)).setText(prefs.getString("network", null));
+                ((EditText) findViewById(R.id.editText2)).setText(prefs.getString("channels", null));
+                ((EditText) findViewById(R.id.editText4)).setText(prefs.getString("nick", null));
+                ((EditText) findViewById(R.id.editText5)).setText(prefs.getString("pass", null));
+                startService(intent);
+                ((TextView) findViewById(R.id.textView5)).setText("Connecting!");
+            }
         }
     }
 
@@ -75,20 +97,26 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("network", ((EditText) findViewById(R.id.editText)).getText().toString());
         intent.putExtra("channels", ((EditText) findViewById(R.id.editText2)).getText().toString().split(","));
         intent.putExtra("nick", ((EditText) findViewById(R.id.editText4)).getText().toString());
-
+        if(((EditText)findViewById(R.id.editText5)).getText().length() != 0) {
+            intent.putExtra("pass",((EditText)findViewById(R.id.editText5)).getText().toString());
+        }
         SharedPreferences.Editor edit = getPreferences(MODE_PRIVATE).edit();
+        edit.remove("pass");
+        edit.remove("network");
+        edit.remove("channels");
+        edit.remove("nick");
         edit.putString("network",((EditText) findViewById(R.id.editText)).getText().toString());
         edit.putString("channels",((EditText) findViewById(R.id.editText2)).getText().toString());
         edit.putString("nick",((EditText) findViewById(R.id.editText4)).getText().toString());
+        edit.putString("pass",((EditText) findViewById(R.id.editText5)).getText().toString());
         edit.commit();
 
         startService(intent);
-        ((TextView)findViewById(R.id.textView5)).setText("Saved/Connected!");
+        ((TextView)findViewById(R.id.textView5)).setText("Saved/Connecting!");
     }
     @Override
     public void onResume() {
         super.onResume();
-
         boolean isConnected = PebbleKit.isWatchConnected(this);
     }
 }

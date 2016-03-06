@@ -28,16 +28,25 @@ public class IRCIntent extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        try {
             String network = intent.getStringExtra("network");
             String[] channels = intent.getStringArrayExtra("channels");
             String nick = intent.getStringExtra("nick");
-            IrcBot bot = new IrcBot(this,network,channels,nick);
-        } catch (IrcException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            String nickPass = null;
+            if(intent.getStringExtra("pass") != null) {
+                nickPass = intent.getStringExtra("pass");
+            }
+            try {
+                IrcBot bot = new IrcBot(this,network,channels,nick,nickPass);
+            } catch (IrcException e) {
+                if(e.getMessage().contains("Nickname is already in use.")) {
+                    Intent i = new Intent("CONNECT_F");
+                    i.putExtra("reason","Nickname already in use.");
+                    sendBroadcast(i);
+                }
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         /*try {
             bot.setVerbose(true);
             bot.connect("irc.freenode.net");
