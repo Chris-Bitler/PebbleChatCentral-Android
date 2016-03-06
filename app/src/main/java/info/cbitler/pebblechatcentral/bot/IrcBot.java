@@ -34,12 +34,13 @@ public class IrcBot extends PircBot {
 
     @Override
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
+        PebbleDictionary dict = new PebbleDictionary();
+        dict.addString(0,channel);
+        dict.addString(1,sender);
+        dict.addString(2,message);
         if(message.toLowerCase().contains(this.getName().toLowerCase())) {
-            PebbleDictionary dict = new PebbleDictionary();
-            dict.addString(0,channel);
-            dict.addString(1,sender);
-            dict.addString(2,message);
-            PebbleKit.sendDataToPebble(intent.getApplicationContext(), UUID.fromString("22a0388d-94dc-4b47-a5d2-32121c87afa4"), dict);
+            dict.addString(3,"true");
         }
+        PebbleKit.sendDataToPebble(intent.getApplicationContext(), UUID.fromString("22a0388d-94dc-4b47-a5d2-32121c87afa4"), dict);
     }
 }
