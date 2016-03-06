@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
         BroadcastReceiver rc = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                ((TextView)findViewById(R.id.textView5)).setText("Cannot connect - " + intent.getStringExtra("reason"));
+                if(!((TextView)findViewById(R.id.textView5)).getText().toString().equalsIgnoreCase("Connected!")) {
+                    ((TextView) findViewById(R.id.textView5)).setText("Cannot connect - " + intent.getStringExtra("reason") + "Wait and try again, or change some options.");
+                }
             }
         };
 
@@ -52,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
 
         registerReceiver(rc, new IntentFilter("CONNECT_F"));
         registerReceiver(rc2, new IntentFilter("CONNECT"));
+        if(IRCIntent.bot != null) {
+            IRCIntent.bot.disconnect();
+            IRCIntent.bot.close();
+            IRCIntent.intent.onDestroy();
+        }
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
         if(intent == null) {
             if (prefs.getString("network", null) != null && prefs.getString("channels", null) != null && prefs.getString("nick", null) != null) {
@@ -97,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("network", ((EditText) findViewById(R.id.editText)).getText().toString());
         intent.putExtra("channels", ((EditText) findViewById(R.id.editText2)).getText().toString().split(","));
         intent.putExtra("nick", ((EditText) findViewById(R.id.editText4)).getText().toString());
+        if(IRCIntent.bot != null) {
+                IRCIntent.bot.disconnect();
+                IRCIntent.bot.close();
+                IRCIntent.intent.onDestroy();
+        }
         if(((EditText)findViewById(R.id.editText5)).getText().length() != 0) {
             intent.putExtra("pass",((EditText)findViewById(R.id.editText5)).getText().toString());
         }

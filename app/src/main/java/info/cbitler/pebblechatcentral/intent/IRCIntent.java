@@ -1,8 +1,10 @@
 package info.cbitler.pebblechatcentral.intent;
 
 import android.app.IntentService;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -20,10 +22,12 @@ import info.cbitler.pebblechatcentral.bot.IrcBot;
  */
 public class IRCIntent extends IntentService {
     Handler handler;
-
+    public static IrcBot bot;
+    public static IRCIntent intent;
     public IRCIntent() {
         super("IRCIntent");
         handler = new Handler(Looper.getMainLooper());
+        intent = this;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class IRCIntent extends IntentService {
                 nickPass = intent.getStringExtra("pass");
             }
             try {
-                IrcBot bot = new IrcBot(this,network,channels,nick,nickPass);
+                bot = new IrcBot(this,network,channels,nick,nickPass);
             } catch (IrcException e) {
                 if(e.getMessage().contains("Nickname is already in use.")) {
                     Intent i = new Intent("CONNECT_F");

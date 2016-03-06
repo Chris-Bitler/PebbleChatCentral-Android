@@ -42,6 +42,11 @@ public class IrcBot extends PircBot {
         intent.sendBroadcast(i);
     }
 
+    public void close() {
+        this.disconnect();
+
+    }
+
     @Override
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
         PebbleDictionary dict = new PebbleDictionary();
