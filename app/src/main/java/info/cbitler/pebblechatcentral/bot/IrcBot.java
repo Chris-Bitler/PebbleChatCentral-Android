@@ -24,12 +24,16 @@ import info.cbitler.pebblechatcentral.intent.IRCIntent;
  */
 public class IrcBot extends PircBot {
     IRCIntent intent;
-    public IrcBot(IRCIntent intent) throws IrcException, IOException {
+    public IrcBot(IRCIntent intent,String network, String[] channels, String nick) throws IrcException, IOException {
         this.setVerbose(true);
-        this.setName("VoidWhisperer|P1");
-        this.connect("irc.freenode.net");
-        this.joinChannel("##jflory7");
+        this.setName(nick);
+        this.setLogin("Test");
+        this.connect(network);
+        this.changeNick(nick);
         this.intent = intent;
+        for(String channel : channels) {
+            this.joinChannel(channel);
+        }
     }
 
     @Override
